@@ -1,36 +1,831 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Event Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1" rel="stylesheet">
   <style>
-    body{font-family:Arial,sans-serif;max-width:700px;margin:30px auto;padding:0 15px}
-    h1{color:#2c5282} input,button{padding:8px;margin:4px 0}
-    li{background:#f1f5f9;margin:6px 0;padding:10px;border-radius:6px;list-style:none}
-    button.del{float:right;background:#e53e3e;color:#fff;border:0;border-radius:4px}
+    /* ── Reset & Variables ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface-hover: #f8f9fa;
+      --text: #1a1a2e;
+      --text-secondary: #6b7280;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --border: #e5e7eb;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --transition: 0.2s ease;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-hover: #334155;
+      --text: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --primary: #818cf8;
+      --primary-hover: #6366f1;
+      --primary-light: #1e1b4b;
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --border: #334155;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.4);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+      transition: background var(--transition), border-color var(--transition);
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .navbar-brand .material-symbols-rounded {
+      font-size: 28px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .icon-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+      border-color: var(--primary);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+      color: #fff;
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      opacity: 0.85;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* ── Section Header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title .material-symbols-rounded {
+      color: var(--primary);
+    }
+
+    /* ── Search Box ── */
+    .search-box {
+      position: relative;
+      width: 280px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px 10px 40px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      transition: all var(--transition);
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+    }
+
+    .search-box .material-symbols-rounded {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Layout Grid ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .search-box { width: 100%; }
+      .hero h1 { font-size: 1.5rem; }
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: all var(--transition);
+    }
+
+    .card-header {
+      padding: 20px 24px 0;
+      font-weight: 700;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-header .material-symbols-rounded {
+      color: var(--primary);
+      font-size: 22px;
+    }
+
+    .card-body { padding: 20px 24px 24px; }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      transition: all var(--transition);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+      background: var(--surface);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      width: 100%;
+    }
+
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      padding: 6px 10px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239,68,68,0.1);
+      border-color: var(--danger);
+    }
+
+    /* ── Event Cards Grid ── */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .event-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .event-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+
+    .event-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .event-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .event-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .event-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .event-meta-item .material-symbols-rounded {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-upcoming {
+      background: rgba(16,185,129,0.1);
+      color: var(--success);
+    }
+
+    .badge-past {
+      background: rgba(245,158,11,0.1);
+      color: var(--warning);
+    }
+
+    .badge-today {
+      background: rgba(79,70,229,0.1);
+      color: var(--primary);
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      grid-column: 1 / -1;
+    }
+
+    .empty-state .material-symbols-rounded {
+      font-size: 64px;
+      color: var(--text-secondary);
+      opacity: 0.4;
+    }
+
+    .empty-state h3 {
+      margin-top: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .empty-state p {
+      color: var(--text-secondary);
+      margin-top: 4px;
+      font-size: 0.9rem;
+    }
+
+    /* ── Toast ── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 20px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+      min-width: 260px;
+      max-width: 380px;
+    }
+
+    .toast-success .material-symbols-rounded { color: var(--success); }
+    .toast-error .material-symbols-rounded { color: var(--danger); }
+    .toast-info .material-symbols-rounded { color: var(--primary); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(0); }
+      to { opacity: 0; transform: translateX(40px); }
+    }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-overlay {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 40px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      grid-column: 1 / -1;
+    }
+
+    /* ── Fade in animation for cards ── */
+    .fade-in {
+      animation: fadeUp 0.35s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
   </style>
 </head>
 <body>
-  <h1>Event Management System</h1>
-  <input id="title" placeholder="Event title"><br>
-  <input id="date" type="date"><br>
-  <input id="loc" placeholder="Location"><br>
-  <button onclick="addEvent()">Add Event</button>
-  <ul id="list"></ul>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a class="navbar-brand" href="#">
+      <span class="material-symbols-rounded">calendar_month</span>
+      EventHub
+    </a>
+    <div class="navbar-actions">
+      <button class="icon-btn" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+        <span class="material-symbols-rounded">dark_mode</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Event Management Dashboard</h1>
+    <p>Organize, track, and manage all your events in one place.</p>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value" id="totalCount">–</span>
+        <span class="stat-label">Total Events</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="upcomingCount">–</span>
+        <span class="stat-label">Upcoming</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="pastCount">–</span>
+        <span class="stat-label">Past</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="main-grid">
+
+      <!-- Add Event Form -->
+      <div>
+        <div class="card" style="position:sticky;top:80px;">
+          <div class="card-header">
+            <span class="material-symbols-rounded">add_circle</span>
+            Add New Event
+          </div>
+          <div class="card-body">
+            <form id="eventForm" autocomplete="off">
+              <div class="form-group">
+                <label for="title">Event Title *</label>
+                <input class="form-control" id="title" type="text" placeholder="e.g. Team Standup" required maxlength="120">
+              </div>
+              <div class="form-group">
+                <label for="date">Date *</label>
+                <input class="form-control" id="date" type="date" required>
+              </div>
+              <div class="form-group">
+                <label for="loc">Location</label>
+                <input class="form-control" id="loc" type="text" placeholder="e.g. Conference Room A" maxlength="120">
+              </div>
+              <button type="submit" class="btn btn-primary" id="submitBtn">
+                <span class="material-symbols-rounded" style="font-size:20px">add</span>
+                Add Event
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events List -->
+      <div>
+        <div class="section-header">
+          <div class="section-title">
+            <span class="material-symbols-rounded">event_note</span>
+            Your Events
+          </div>
+          <div class="search-box">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" id="searchInput" placeholder="Search events...">
+          </div>
+        </div>
+        <div class="events-grid" id="eventsGrid">
+          <div class="loading-overlay"><div class="spinner"></div> Loading events...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    EventHub &mdash; Event Management System
+  </footer>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
 <script>
-async function load(){
-  const r = await fetch('/api/events'); const data = await r.json();
-  document.getElementById('list').innerHTML = data.map(e =>
-    `<li><b>${e.title}</b> - ${e.event_date} @ ${e.location||''}
-     <button class="del" onclick="del(${e.id})">X</button></li>`).join('');
-}
-async function addEvent(){
-  await fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({title:title.value,event_date:date.value,location:loc.value})});
-  title.value='';loc.value='';load();
-}
-async function del(id){await fetch('/api/events/'+id,{method:'DELETE'});load();}
-load();
+  /* ── Helpers ── */
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function showToast(message, type) {
+    type = type || 'info';
+    var icons = { success: 'check_circle', error: 'error', info: 'info' };
+    var container = document.getElementById('toastContainer');
+    var toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+    toast.innerHTML = '<span class="material-symbols-rounded">' + esc(icons[type] || 'info') + '</span>' + esc(message);
+    container.appendChild(toast);
+    setTimeout(function() { if (toast.parentNode) toast.remove(); }, 3100);
+  }
+
+  function dateBadge(dateStr) {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var evDate = new Date(dateStr + 'T00:00:00'); evDate.setHours(0,0,0,0);
+    if (evDate.getTime() === today.getTime()) return '<span class="badge badge-today">Today</span>';
+    if (evDate > today) return '<span class="badge badge-upcoming">Upcoming</span>';
+    return '<span class="badge badge-past">Past</span>';
+  }
+
+  function formatDate(dateStr) {
+    try {
+      var d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    } catch(e) { return esc(dateStr); }
+  }
+
+  /* ── State ── */
+  var allEvents = [];
+  var searchTerm = '';
+
+  /* ── API ── */
+  async function loadEvents() {
+    var grid = document.getElementById('eventsGrid');
+    try {
+      var r = await fetch('/api/events');
+      if (!r.ok) throw new Error('API returned ' + r.status);
+      allEvents = await r.json();
+      renderEvents();
+      updateStats();
+    } catch(e) {
+      grid.innerHTML = '<div class="empty-state"><span class="material-symbols-rounded">cloud_off</span><h3>Connection Error</h3><p>Could not load events. Please try again later.</p></div>';
+    }
+  }
+
+  function renderEvents() {
+    var grid = document.getElementById('eventsGrid');
+    var filtered = allEvents;
+    if (searchTerm) {
+      var q = searchTerm.toLowerCase();
+      filtered = allEvents.filter(function(e) {
+        return (e.title && e.title.toLowerCase().indexOf(q) !== -1) ||
+               (e.location && e.location.toLowerCase().indexOf(q) !== -1) ||
+               (e.event_date && e.event_date.indexOf(q) !== -1);
+      });
+    }
+
+    if (filtered.length === 0) {
+      if (searchTerm) {
+        grid.innerHTML = '<div class="empty-state"><span class="material-symbols-rounded">search_off</span><h3>No matches found</h3><p>Try a different search term.</p></div>';
+      } else {
+        grid.innerHTML = '<div class="empty-state"><span class="material-symbols-rounded">event_available</span><h3>No events yet</h3><p>Add your first event using the form on the left!</p></div>';
+      }
+      return;
+    }
+
+    grid.innerHTML = filtered.map(function(e, i) {
+      return '<div class="event-card fade-in" style="animation-delay:' + (i * 0.05) + 's">' +
+        '<div class="event-card-header">' +
+          '<span class="event-title">' + esc(e.title) + '</span>' +
+          '<button class="btn btn-danger" onclick="deleteEvent(' + e.id + ')" title="Delete event" aria-label="Delete event">' +
+            '<span class="material-symbols-rounded" style="font-size:20px">delete</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="event-meta">' +
+          '<div class="event-meta-item">' +
+            '<span class="material-symbols-rounded">calendar_today</span>' +
+            formatDate(e.event_date) +
+          '</div>' +
+          (e.location ? '<div class="event-meta-item"><span class="material-symbols-rounded">location_on</span>' + esc(e.location) + '</div>' : '') +
+        '</div>' +
+        dateBadge(e.event_date) +
+      '</div>';
+    }).join('');
+  }
+
+  function updateStats() {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var upcoming = 0, past = 0;
+    allEvents.forEach(function(e) {
+      var d = new Date(e.event_date + 'T00:00:00'); d.setHours(0,0,0,0);
+      if (d >= today) upcoming++; else past++;
+    });
+    document.getElementById('totalCount').textContent = allEvents.length;
+    document.getElementById('upcomingCount').textContent = upcoming;
+    document.getElementById('pastCount').textContent = past;
+  }
+
+  async function addEvent(ev) {
+    ev.preventDefault();
+    var titleEl = document.getElementById('title');
+    var dateEl = document.getElementById('date');
+    var locEl = document.getElementById('loc');
+    var btn = document.getElementById('submitBtn');
+
+    if (!titleEl.value.trim() || !dateEl.value) {
+      showToast('Please fill in the title and date.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Adding...';
+
+    try {
+      var r = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: titleEl.value.trim(),
+          event_date: dateEl.value,
+          location: locEl.value.trim()
+        })
+      });
+      if (!r.ok) { var err = await r.json(); throw new Error(err.error || 'Failed'); }
+      titleEl.value = '';
+      locEl.value = '';
+      showToast('Event added successfully!', 'success');
+      await loadEvents();
+    } catch(e) {
+      showToast('Failed to add event: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:20px">add</span> Add Event';
+    }
+  }
+
+  async function deleteEvent(id) {
+    try {
+      var r = await fetch('/api/events/' + id, { method: 'DELETE' });
+      if (!r.ok) throw new Error('Delete failed');
+      showToast('Event deleted.', 'info');
+      await loadEvents();
+    } catch(e) {
+      showToast('Failed to delete event.', 'error');
+    }
+  }
+
+  /* ── Dark mode toggle ── */
+  function initTheme() {
+    var saved = localStorage.getItem('theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    updateThemeIcon();
+  }
+
+  function updateThemeIcon() {
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.getElementById('themeToggle').querySelector('.material-symbols-rounded').textContent =
+      isDark ? 'light_mode' : 'dark_mode';
+  }
+
+  document.getElementById('themeToggle').addEventListener('click', function() {
+    var current = document.documentElement.getAttribute('data-theme');
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeIcon();
+  });
+
+  /* ── Search ── */
+  document.getElementById('searchInput').addEventListener('input', function(e) {
+    searchTerm = e.target.value;
+    renderEvents();
+  });
+
+  /* ── Form ── */
+  document.getElementById('eventForm').addEventListener('submit', addEvent);
+
+  /* ── Init ── */
+  initTheme();
+  loadEvents();
 </script>
+
 </body>
 </html>

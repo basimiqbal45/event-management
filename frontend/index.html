@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Event Management</title>
+  <style>
+    body{font-family:Arial,sans-serif;max-width:700px;margin:30px auto;padding:0 15px}
+    h1{color:#2c5282} input,button{padding:8px;margin:4px 0}
+    li{background:#f1f5f9;margin:6px 0;padding:10px;border-radius:6px;list-style:none}
+    button.del{float:right;background:#e53e3e;color:#fff;border:0;border-radius:4px}
+  </style>
+</head>
+<body>
+  <h1>Event Management System</h1>
+  <input id="title" placeholder="Event title"><br>
+  <input id="date" type="date"><br>
+  <input id="loc" placeholder="Location"><br>
+  <button onclick="addEvent()">Add Event</button>
+  <ul id="list"></ul>
+<script>
+async function load(){
+  const r = await fetch('/api/events'); const data = await r.json();
+  document.getElementById('list').innerHTML = data.map(e =>
+    `<li><b>${e.title}</b> - ${e.event_date} @ ${e.location||''}
+     <button class="del" onclick="del(${e.id})">X</button></li>`).join('');
+}
+async function addEvent(){
+  await fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title:title.value,event_date:date.value,location:loc.value})});
+  title.value='';loc.value='';load();
+}
+async function del(id){await fetch('/api/events/'+id,{method:'DELETE'});load();}
+load();
+</script>
+</body>
+</html>

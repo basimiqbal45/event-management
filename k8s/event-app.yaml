@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: event-db-pvc
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-db
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: event-db}
+  template:
+    metadata:
+      labels: {app: event-db}
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              value: eventsdb
+            - name: MYSQL_USER
+              value: eventuser
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: event-db-secret, key: DB_PASSWORD}
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: event-db-secret, key: DB_ROOT_PASSWORD}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: event-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-db
+spec:
+  selector: {app: event-db}
+  ports:
+    - port: 3306
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: event-backend}
+  template:
+    metadata:
+      labels: {app: event-backend}
+    spec:
+      containers:
+        - name: backend
+          image: event-backend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DB_HOST
+              value: event-db
+            - name: DB_USER
+              value: eventuser
+            - name: DB_NAME
+              value: eventsdb
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: event-db-secret, key: DB_PASSWORD}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-backend
+spec:
+  selector: {app: event-backend}
+  ports:
+    - port: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: event-frontend}
+  template:
+    metadata:
+      labels: {app: event-frontend}
+    spec:
+      containers:
+        - name: frontend
+          image: event-frontend:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-frontend
+spec:
+  type: NodePort
+  selector: {app: event-frontend}
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
